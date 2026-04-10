@@ -1,4 +1,4 @@
-# WDAC Multi-Tool | WARNING currently it is early stage with amny bugs, not all features are implemented/working !!!
+# WDAC Multi-Tool | WARNING currently it is early stage with many bugs, not all features are implemented/working !!!
 
 > **Automated audit log collection and analysis for Windows Defender Application Control across classroom small-fleet Windows environments.**
 
@@ -92,7 +92,7 @@ python run.py
 
 | Flag | Default | Description |
 |---|---|---|
-| `--collect` | off | Pull live logs from remote PCs before analysing |
+| `--collect` | `off` | Pull live logs from remote PCs before analysing |
 | `--pcs` | `all` | PC range: `all`, `1-10`, `2-5,8` |
 | `--max-pcs` | `25` | Highest PC number #to-do make it dynamic and warn when exceeding safe limits |
 | `--days-back` | `30` | How far back to query the event log |
@@ -108,7 +108,7 @@ python run.py
 
 The generated HTML report is fully self-contained — no server, no dependencies, note that it doesnt update on its own.
 
-- **Summary** — when logs collected/report created, amount of pcs, total unique files, certified, no-cert, enforcement blocks all at a glance
+- **Summary** — when logs collected and report created, amount of pcs/files/certified/no-cert/enforcement blocks, all at a glance
 - **Filters** — filter by PC, file extension, policy name with simple pill like buttons
 - **Text search** — filter by filename or full path
 - **Min hits / Min PCs** — surface files that appear across multiple machines or repeatedly
@@ -125,10 +125,10 @@ Each unique file is assigned one of five categories:
 
 | Category | Meaning | WDAC rule possible? |
 |---|---|---|
-| **Microsoft** | Signed by Microsoft Corporation | Yes — but it could be system component |
+| **Microsoft** | Signed by Microsoft Corporation | Yes — but it could be a system component |
 | **Certified** | Signed by a third-party publisher | Yes — publisher rule |
-| **System** | Unsigned binary in a Windows system path | Yes — path or hash rule, but it is important system component |
-| **Hash only** | Unsigned, but SHA256 available | Yes — hash rule, but hashes may change and break policys |
+| **System** | Unsigned binary in a Windows system path | Yes — path or hash rule, but it could be a system component |
+| **Hash only** | Unsigned, but SHA256 available | Yes — hash rule, but hashes may change and break policies |
 | **No cert** | No publisher, no hash | Manual review required |
 
 ---
