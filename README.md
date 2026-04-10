@@ -1,2 +1,5 @@
 # wdac-tool
-wdac - windows defender application, a powerful built in windows tool that allows full control of any executables from simple logging of exes to complex banning/logging combined mechanism/policy covering exes bats .ps1 vbs and etc and able to decide via files info such as publisher, dates, paths, etc
+wdac - is a "windows defender application control", a powerful built in windows program that takes full control of any executables BUT it is really hsrd to set up and inconvinient in use
+this multi tool was made specifically to fix that issue
+
+ NOTE it is in early development stage and im a bad programmer, would apreciate help but no hate here ok? ;)
