@@ -93,7 +93,6 @@ COL_ALIASES: dict[str, list[str]] = {
     "policyguid":            ["PolicyGUID", "policyguid", "PolicyId", "Policy Id"],
     "machinename":           ["MachineName", "machinename", "Computer", "PSComputerName"],
     "originalfilename":      ["OriginalFilename", "OriginalFileName", "originalfilename"],
-    "issuer":                ["Issuer", "issuer"],
 }
 
 
@@ -119,7 +118,6 @@ class LogEntry:
     policyguid:       str
     policy_type:      str                   # "windows" | "custom"
     originalfilename: str
-    issuer:           str                   # cert issuer CN; "" if unavailable
     category:         str                   # see classify()
     pcs:              list[str]             # which PCs have this file
     pc_hits:          dict[str, int]        # {pc_name: hit_count}
@@ -419,24 +417,15 @@ def _parse_single_csv(
 
         _local_pcs: set[str] = set()   # PCs seen only in this file
         _local_dts: list[datetime] = []  # event timestamps only in this file
-        _sentinel_ts: Optional[str] = None  # collection timestamp from sentinel row
 
         for i, row in enumerate(reader):
-            # ── Sentinel row (metadata, not an event) ────────────────────────
+            # Filter to WDAC event IDs
             eid = _get(row, col_map, "eventid")
-            if eid == "__collection_ts__":
-                _sentinel_ts = _get(row, col_map, "timecreated")
-                pc_from_sentinel = _get(row, col_map, "machinename")
-                if pc_from_sentinel:
-                    _local_pcs.add(pc_from_sentinel)
-                continue
-
             if eid and eid not in WDAC_EVENT_IDS:
                 continue
 
             filepath     = nt_to_win32_path(_get(row, col_map, "filepath"))
             publisher    = _get(row, col_map, "publisher")
-            issuer       = _get(row, col_map, "issuer")
             sha256       = flat_hash_to_hex(_get(row, col_map, "sha256"))
             sha1         = flat_hash_to_hex(_get(row, col_map, "sha1"))
             timecreated  = _get(row, col_map, "timecreated")
@@ -476,7 +465,6 @@ def _parse_single_csv(
                     policyguid       = policyguid,
                     policy_type      = detect_policy_type(policyguid),
                     originalfilename = origname,
-                    issuer           = issuer,
                     category         = classify(filepath, publisher, sha256),
                     pcs              = [pc_name],
                     pc_hits          = {pc_name: 1},
@@ -502,15 +490,10 @@ def _parse_single_csv(
                         entry.last_seen = dt
 
     # ── Register this CSV's collection timestamp ──────────────────────────────
-    # Prefer the sentinel row timestamp (= when --collect actually ran).
-    # Fall back to earliest event datetime only for legacy CSVs without sentinel.
-    if _sentinel_ts:
-        coll_ts = _sentinel_ts
-    else:
-        earliest_dt: Optional[datetime] = None
-        if _local_dts:
-            earliest_dt = min(_local_dts)
-        coll_ts = _collection_ts_from_path(csv_path, earliest_dt)
+    earliest_dt: Optional[datetime] = None
+    if _local_dts:
+        earliest_dt = min(_local_dts)
+    coll_ts = _collection_ts_from_path(csv_path, earliest_dt)
 
     # Group PCs by collection timestamp
     if coll_ts not in collection_runs:
